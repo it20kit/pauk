@@ -6,7 +6,25 @@ use App\Events\Event;
 
 class EventBus
 {
+    /**
+     * @var Event[]
+     */
     private array $events;
+
+    /**
+     * @var array<string, callable>
+     */
+    private array $subscribers;
+
+    public function run(): void
+    {
+        foreach ($this->events as $event) {
+            if (!$handler = $this->subscribers[$event->getType()] ?? null) {
+                throw new \Exception('unhandled event ' . $event->getType());
+            }
+            $handler($event);
+        }
+    }
 
     public function push(Event $event):void
     {

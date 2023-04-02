@@ -6,8 +6,10 @@ namespace App;
 
 class Keyboard
 {
-    public function inputPlayer()
+    public function inputPlayer(): string
     {
-        return \readline();
+        $input = \readline();
+
+        return is_bool($input) ? '' : $input;
     }
 }

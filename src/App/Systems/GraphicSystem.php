@@ -3,6 +3,8 @@
 namespace App\Systems;
 
 use App\EventBus;
+use App\Events\CreateScreenWithGameRulesEvent;
+use App\Events\DisplayMainScreenWithDataEntryEvent;
 use App\Events\Event;
 use App\Painter\Painter;
 use App\ProjectManager;
@@ -14,7 +16,6 @@ class GraphicSystem extends AbstractSystem
     private ProjectManager $projectManager;
 
     protected array $events = [
-        "displayScreenWithGameRules" => "createScreenWithGameRules",
         "displayMainScreenWithDataEntry" => "createMainScreenForDataEntry",
         "displayMainScreenMessage" => "createMainScreenMessage",
         "displayWinnerScreen" => "createWinnerScreen"
@@ -26,47 +27,46 @@ class GraphicSystem extends AbstractSystem
         $this->projectManager = $projectManager;
     }
 
-    public function createMainScreen(Event $displayEvent): void
+    public function createMainScreen(array $gameData): void
     {
         $firstXCoordinatesForDisplayingCardNumbersOnScreen = 2;
         $secondXCoordinatesForDisplayingCardNumbersOnScreen = 147;
-        $this->addDecksInScreen($displayEvent);
+        $this->addDecksInScreen($gameData);
         $this->addNumberDeckInScreen();
         $this->addNumberCardInScreen($firstXCoordinatesForDisplayingCardNumbersOnScreen);
         $this->addNumberCardInScreen($secondXCoordinatesForDisplayingCardNumbersOnScreen);
-        $this->addCompletedDeckInScreen($displayEvent);
-        $this->addMainDeckInScreen($displayEvent);
-        $this->addCounterStepsInScreen($displayEvent);
-        $this->addCounterScoreInScreen($displayEvent);
+        $this->addCompletedDeckInScreen($gameData);
+        $this->addMainDeckInScreen($gameData);
+        $this->addCounterStepsInScreen($gameData);
+        $this->addCounterScoreInScreen($gameData);
     }
 
-    public function createScreenWithGameRules(Event $displayEvent, EventBus $eventBus): void
+    public function createScreenWithGameRules(): void
     {
         $this->painter->addPicture("START GAME", 80, 20);
         $this->painter->display();
         sleep(3);
         $this->painter->clear();
-        $eventBus->clearEvents();
-        $typeEvent = "createInitialStateOfGame";
-        $logicEvent = $this->createEvent();
-        $logicEvent->setType($typeEvent);
-        $eventBus->push($logicEvent);
+//        $eventBus->clearEvents();
+//        $typeEvent = "createInitialStateOfGame";
+//        $logicEvent = $this->createEvent();
+//        $logicEvent->setType($typeEvent);
+//        $eventBus->push($logicEvent);
     }
 
-    public function createMainScreenForDataEntry(Event $displayEvent, EventBus $eventBus): void
+    public function createMainScreenForDataEntry(array $gameData): void
     {
         $xCoordinateForOutputMessage = 6;
         $yCoordinateForOutputMessage = 40;
         $this->painter->clear();
         $message = "Specify which deck, which card, and which deck to move the card to:";
         $this->painter->addPicture($message,$xCoordinateForOutputMessage,$yCoordinateForOutputMessage);
-        $this->createMainScreen($displayEvent);
+        $this->createMainScreen($gameData);
         $this->painter->display();
-        $eventBus->clearEvents();
-        $inputEvent = $this->createEvent();
-        $typeEvent = "inputPlayer";
-        $inputEvent->setType($typeEvent);
-        $eventBus->push($inputEvent);
+//        $inputEvent = $this->createEvent();
+//        $typeEvent = "inputPlayer";
+//        $inputEvent->setType($typeEvent);
+//        $eventBus->push($inputEvent);
     }
 
     public function createMainScreenMessage(Event $displayEvent, EventBus $eventBus): void
@@ -129,14 +129,13 @@ class GraphicSystem extends AbstractSystem
             $yCoordinateForAddingLateralBorderRightToScreen);
     }
 
-    private function addMainDeckInScreen(Event $displayEvent): void
+    private function addMainDeckInScreen(array $gameData): void
     {
         $xCoordinateForAddingMainDeckToScreen = 150;
         $yCoordinateForAddingMainDeckToScreen = 4;
         $xCoordinateForAddingCardInDeckToScreen = 150;
         $yCoordinateForAddingCardInDeckToScreen = 3;
-        $gameData = $displayEvent->getData();
-        $mainDeck = $gameData["gameData"]["mainDeck"];
+        $mainDeck = $gameData["mainDeck"];
         $numberOfCardInDeck = $mainDeck->countingCard();
         $numberOfDecksOfTenPieces = $numberOfCardInDeck / 10;
         $this->painter->addPicture("Card in MainDeck: $numberOfCardInDeck", $xCoordinateForAddingCardInDeckToScreen,
@@ -149,12 +148,11 @@ class GraphicSystem extends AbstractSystem
         }
     }
 
-    private function addCompletedDeckInScreen(Event $displayEvent): void
+    private function addCompletedDeckInScreen(array $gameData): void
     {
         $xCoordinateForAddingCompletedDecksToScreen = 150;
         $yCoordinateForAddingCompletedDecksToScreen = 40;
-        $data = $displayEvent->getData();
-        $completedDeck = $data["gameData"]["completedDecks"];
+        $completedDeck = $gameData["completedDecks"];
         if (count($completedDeck) !== 0) {
             $numberOfCompletedDecks = count($completedDeck);
             $type = $completedDeck[0]->getType();
@@ -268,10 +266,9 @@ class GraphicSystem extends AbstractSystem
         }
     }
 
-    private function addDecksInScreen(Event $displayEvent): void
+    private function addDecksInScreen($gameData): void
     {
-        $gameData = $displayEvent->getData();
-        $decks = $gameData["gameData"]["decks"];
+        $decks = $gameData["decks"];
         $xCoordinateForAddingDecksToScreen = 8;
         $yCoordinateForAddingDecksToScreen = 3;
 
@@ -282,25 +279,32 @@ class GraphicSystem extends AbstractSystem
         }
     }
 
-    private function addCounterStepsInScreen(Event $event): void
+    private function addCounterStepsInScreen(array $gameData): void
     {
         $xCoordinateForAddingStepsToScreen = 150;
         $yCoordinateForAddingStepsToScreen = 12;
-        $gameData = $event->getData();
-        $steps = $gameData["gameData"]["steps"];
+        $steps = $gameData["steps"];
         $string = "Steps taken:$steps";
         $this->painter->addPicture($string,$xCoordinateForAddingStepsToScreen,$yCoordinateForAddingStepsToScreen);
     }
 
-    private function addCounterScoreInScreen(Event $event): void
+    private function addCounterScoreInScreen(array $gameData): void
     {
         $xCoordinateForAddingScoreToScreen = 150;
         $yCoordinateForAddingScoreToScreen = 14;
-        $gameData = $event->getData();
-        $score = $gameData["gameData"]["score"];
+        $score = $gameData["score"];
         $string = "Score:$score";
         $this->painter->addPicture($string, $xCoordinateForAddingScoreToScreen, $yCoordinateForAddingScoreToScreen);
     }
 
+    public function getSubscriptions(): array
+    {
+        return [
+            CreateScreenWithGameRulesEvent::class => fn() => $this->createScreenWithGameRules(),
+            DisplayMainScreenWithDataEntryEvent::class => function (DisplayMainScreenWithDataEntryEvent $event) {
+                $this->createMainScreenForDataEntry($event->getGameData());
+            },
+        ];
+    }
 }
 

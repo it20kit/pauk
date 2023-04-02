@@ -9,22 +9,22 @@ use App\Painter\Painter;
 use App\Painter\BorderPainter\ArrowBorderPainter;
 use App\Systems\GameManagerSystem;
 use App\Systems\GraphicSystem;
-use App\Systems\InputPlayerSystem;
+use App\Systems\InputSystem;
 
-class Game
+class Game1
 {
     public function run(): void
     {
         $painter = new Painter(187,47);
         $painter->addBorderPainter(new ArrowBorderPainter());
-        $deckFactory = new DeckFactory();
         $projectManager = new ProjectManager();
+        $deckFactory = new DeckFactory();
         $keyBoard = new Keyboard();
         $eventBus = new EventBus();
         $systems = [
                     new GraphicSystem($painter,$projectManager),
                     new GameManagerSystem($deckFactory),
-                    new InputPlayerSystem($keyBoard)
+                    new InputSystem($keyBoard)
         ];
         $systemCount = count($systems);
         $displayEvent = new Event();

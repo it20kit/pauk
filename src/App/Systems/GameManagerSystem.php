@@ -6,6 +6,7 @@ namespace App\Systems;
 
 use App\DeckFactory;
 use App\EventBus;
+use App\Events\CreateScreenWithGameRulesEvent;
 use App\Events\Event;
 use App\GameObject\Card;
 use App\GameObject\Deck;
@@ -394,7 +395,4 @@ class GameManagerSystem extends AbstractSystem
         $logicEvent->setType($typeEvent);
         $eventBus->push($logicEvent);
     }
-
-
-
 }

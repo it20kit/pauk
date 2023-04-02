@@ -4,10 +4,12 @@ declare(strict_types=1);
 namespace App\Systems;
 
 use App\EventBus;
+use App\Events\CheckInputEvent;
 use App\Events\Event;
+use App\Events\InputEvent;
 use App\Keyboard;
 
-class InputPlayerSystem extends AbstractSystem
+class InputSystem extends AbstractSystem
 {
     private Keyboard $keyboard;
 
@@ -20,15 +22,25 @@ class InputPlayerSystem extends AbstractSystem
         $this->keyboard = $keyboard;
     }
 
-    public function acceptPlayerInput(Event $logicEvent, EventBus $eventBus): void
+    public function getSubscriptions(): array
     {
-        $acceptedData = $this->keyboard->inputPlayer();
-        $dataAfterFiltration = $this->filterPlayerInput($acceptedData);
-        $this->addPlayerInputInEventBus($eventBus, $dataAfterFiltration);
+        return [
+            CheckInputEvent::class => function () {
+                $this->acceptPlayerInput();
+            },
+        ];
     }
 
+    public function acceptPlayerInput(): void
+    {
+        $acceptedData = $this->keyboard->inputPlayer();
+        $this->eventPusher->push(new InputEvent($acceptedData));
+        echo "Hello!!!\n";
+//        $dataAfterFiltration = $this->filterPlayerInput($acceptedData);
+//        $this->addPlayerInputInEventBus($eventBus, $dataAfterFiltration);
+    }
 
-    public function addPlayerInputInEventBus(EventBus $eventBus, array $acceptedData)
+    public function addPlayerInputInEventBus()
     {
         $eventBus->clearEvents();
         $logicEvent = $this->createEvent();
