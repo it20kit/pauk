@@ -1,0 +1,13 @@
+{
+    "name": "runner/pauk",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/App/"
+        }
+    },
+    "require": {
+      "ext-mbstring": "*",
+      "ext-readline": "*"
+    }
+}
